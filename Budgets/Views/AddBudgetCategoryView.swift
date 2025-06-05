@@ -48,7 +48,7 @@ struct AddBudgetCategoryView: View {
         NavigationStack{
             Form {
                 TextField("Title", text: $title)
-                Slider(value: $total, in: 0...25000, step: 5000){
+                Slider(value: $total, in: 0...25000, step: 1000){
                     Text("Total")
                 } minimumValueLabel: {
                     Text("₸0")

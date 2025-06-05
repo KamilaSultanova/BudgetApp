@@ -13,23 +13,36 @@ struct BudgetListView: View {
     let onDeleteCategory: (BudgetCategory) -> Void
     
     var body: some View {
-        if !budgetCategoryResults.isEmpty{
-            List {
+        List {
+            
+            if !budgetCategoryResults.isEmpty{
+                
                 ForEach(budgetCategoryResults) {
                     budgetCategory in
-                    HStack {
-                        Text(budgetCategory.title ?? "")
-                        Spacer()
-                        VStack{
-                            Text(budgetCategory.total as NSNumber, formatter: NumberFormatter.currency)
+                    NavigationLink(value: budgetCategory){
+                        HStack {
+                            Text(budgetCategory.title ?? "")
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 10){
+                                Text(budgetCategory.total as NSNumber, formatter: NumberFormatter.currency)
+                                Text("\(budgetCategory.overspent ? "Overspent" : "Remaining") \(Text(budgetCategory.remainingBudgetTotal as NSNumber, formatter: NumberFormatter.currency))")
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(budgetCategory.overspent ? .red : .green)
+                            }
                         }
                     }
                 }.onDelete { indexSet in
                     indexSet.map { budgetCategoryResults[$0]}.forEach(onDeleteCategory)
                 }
+            }else{
+                Text("No budget category exists.")
             }
-        }else{
-            Text("No budget category exists.")
+        }
+        .listStyle(.plain)
+        .navigationDestination(for: BudgetCategory.self) {
+            budgetCategory in
+            BudgetDetailView(budgetCategory: budgetCategory)
         }
     }
 }
