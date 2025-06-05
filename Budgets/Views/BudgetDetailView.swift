@@ -29,6 +29,18 @@ struct BudgetDetailView: View {
             
             budgetCategory.addToTransactions(transaction)
             try viewContext.save()
+            
+            title = ""
+            total = ""
+        }catch{
+            print(error.localizedDescription)
+        }
+    }
+    
+    private func deleteTransaction(_ transaction: Transaction) {
+        viewContext.delete(transaction)
+        do{
+            try viewContext.save()
         }catch{
             print(error.localizedDescription)
         }
@@ -63,11 +75,18 @@ struct BudgetDetailView: View {
                     Spacer()
                 }
             }
-            //display summary budget category
-            BudgetSummaryView(budgetCategory: budgetCategory)
-            //display the transactions
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .frame(maxHeight: 300)
+            .padding([.bottom], 20)
             
-            TransactionListView(request: BudgetCategory.transactionsByCategoryRequest(budgetCategory))
+            VStack {
+                //display summary budget category
+                BudgetSummaryView(budgetCategory: budgetCategory)
+                //display the transactions
+                
+                TransactionListView(request: BudgetCategory.transactionsByCategoryRequest(budgetCategory), onDeleteTransaction: deleteTransaction)
+            }.clipShape(RoundedRectangle(cornerRadius: 12))
+          
             Spacer()
         }.padding()
     }

@@ -7,11 +7,25 @@
 
 import SwiftUI
 
+enum SheetAction: Identifiable {
+   case add
+   case edit(BudgetCategory)
+ 
+var id: Int {
+  switch self {
+     case .add:
+  return 1
+     case .edit(_):
+  return 2
+     }
+  }
+}
+
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @FetchRequest(sortDescriptors: []) private var budgetCategoryResults:
-    FetchedResults<BudgetCategory>
-    @State private var isPresented: Bool = false
+    @FetchRequest(fetchRequest: BudgetCategory.all) var budgetCategoryResults
+ 
+    @State private var sheetAction: SheetAction?
     
     var grandTotal: Double {
         budgetCategoryResults.reduce(0) { result, budgetCategory in
@@ -27,19 +41,33 @@ struct ContentView: View {
             print(error.localizedDescription)
         }
     }
+    
+    private func editBudgetCategory(budgetCategory: BudgetCategory) {
+        sheetAction = .edit(budgetCategory)
+    }
+    
     var body: some View {
         NavigationStack {
             VStack {
-                Text(grandTotal as NSNumber, formatter: NumberFormatter.currency)
-                    .fontWeight(.bold)
-                BudgetListView(budgetCategoryResults: budgetCategoryResults, onDeleteCategory: deleteBudgetCategory)
-            }.sheet(isPresented: $isPresented, content: {
-                AddBudgetCategoryView()
+                HStack{
+                    Text("Total Budget:")
+                    Text(grandTotal as NSNumber, formatter: NumberFormatter.currency)
+                        .fontWeight(.bold)
+                }
+                BudgetListView(budgetCategoryResults: budgetCategoryResults, onDeleteCategory: deleteBudgetCategory, onEditCategory: editBudgetCategory)
+            }
+            .sheet(item: $sheetAction, content: { sheetAction in
+                switch sheetAction {
+                case .add:
+                    AddBudgetCategoryView()
+                case .edit(let budgetCategory):
+                    AddBudgetCategoryView(budgetCategory: budgetCategory)
+                }
             })
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Add category") {
-                        isPresented = true
+                        sheetAction = .add
                     }
                 }
             }
